@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring Streamplots and Parallel Categories with ggstream and parcats</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            color: #0066cc;
+        }
+        .header .meta {
+            color: #666;
+            font-size: 0.95em;
+        }
+        h2 {
+            color: #0066cc;
+            margin-top: 30px;
+            border-left: 4px solid #0066cc;
+            padding-left: 15px;
+        }
+        p {
+            text-align: justify;
+            margin-bottom: 15px;
+        }
+        .code-block {
+            background-color: #f5f5f5;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: "Courier New", monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "Courier New", monospace;
+        }
+        .code-block code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .code-description {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .resources {
+            background-color: #f0f8ff;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 3px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        strong {
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Exploring Streamplots and Parallel Categories with ggstream and parcats</h1>
+        <div class="meta">
+            <p><strong>Author:</strong> Samir Rachid Zaim</p>
+            <p><strong>Date:</strong> February 7, 2026</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Introduction</h2>
+        <p>Streamplots and parallel categories visualizations offer powerful ways to explore temporal flows and multivariate relationships. This vignette demonstrates two complementary R packages: <strong>ggstream</strong> for flowing, elegant time-series visualizations, and <strong>parcats</strong> for interactive categorical data exploration.</p>
+    </div>
+
+    <div class="section">
+        <h2>ggstream: Flowing Artistry</h2>
+        <p>The <code>ggstream</code> package extends ggplot2 to create streamplots—smooth, flowing representations of data changes over time. These are ideal for showing how multiple categories contribute to a total across a time dimension.</p>
+        
+        <p class="code-description">Example: Creating a streamplot with sample data</p>
+        <div class="code-block">
+# install.packages("ggstream")<br>
+library(ggstream)<br>
+library(ggplot2)<br>
+library(dplyr)<br>
+<br>
+# Create sample streaming data<br>
+set.seed(42)<br>
+data &lt;- expand_grid(<br>
+&nbsp;&nbsp;time = 1:50,<br>
+&nbsp;&nbsp;category = c("A", "B", "C", "D")<br>
+) %&gt;%<br>
+&nbsp;&nbsp;mutate(value = rnorm(n(), mean = 10 + as.numeric(factor(category)) * 3, sd = 2))<br>
+<br>
+# Create streamplot<br>
+ggplot(data, aes(x = time, y = value, fill = category)) +<br>
+&nbsp;&nbsp;geom_stream(type = "ridge") +<br>
+&nbsp;&nbsp;scale_fill_brewer(palette = "Set2") +<br>
+&nbsp;&nbsp;theme_minimal() +<br>
+&nbsp;&nbsp;labs(title = "Stream Plot: Flows Over Time",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x = "Time", y = "Value", fill = "Category")
+        </div>
+
+        <p>This code generates a beautiful streamplot showing how values from four categories flow and interact over a 50-time-unit period. The <code>geom_stream()</code> function with <code>type = "ridge"</code> creates smooth, undulating ribbons that represent each category's contribution over time.</p>
+    </div>
+
+    <div class="section">
+        <h2>parcats: Interactive Parallel Categories</h2>
+        <p>The <code>parcats</code> package creates interactive parallel categories (also called alluvial diagrams), enabling exploration of multi-level relationships. This is particularly useful for understanding how observations flow through multiple categorical dimensions.</p>
+        
+        <p class="code-description">Example: Creating an interactive parallel categories plot</p>
+        <div class="code-block">
+# install.packages("parcats")<br>
+library(parcats)<br>
+<br>
+# Create categorical data<br>
+data_cat &lt;- data.frame(<br>
+&nbsp;&nbsp;Industry = c("Tech", "Tech", "Finance", "Finance",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Retail", "Retail", "Tech", "Finance"),<br>
+&nbsp;&nbsp;Region = c("North", "South", "North", "South",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"North", "South", "North", "South"),<br>
+&nbsp;&nbsp;Quarter = c("Q1", "Q2", "Q1", "Q2",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Q1", "Q2", "Q3", "Q3"),<br>
+&nbsp;&nbsp;Employees = c(150, 200, 120, 180, 90, 110, 170, 140)<br>
+)<br>
+<br>
+# Create interactive parallel categories plot<br>
+parcats(data_cat, dimensions = c("Industry", "Region", "Quarter"))
+        </div>
+
+        <p>This code creates an interactive visualization showing how organizations flow through three categorical dimensions: Industry, Region, and Quarter. Users can hover over connections to see flows and click categories to filter the view, making exploratory data analysis intuitive and engaging.</p>
+    </div>
+
+    <div class="section">
+        <h2>Comparison and Use Cases</h2>
+        
+        <h3>ggstream excels at showing:</h3>
+        <ul>
+            <li>Temporal evolution of compositions (stacked area on curves)</li>
+            <li>Proportional changes across time</li>
+            <li>Smooth, aesthetically pleasing trends</li>
+        </ul>
+
+        <h3>parcats excels at showing:</h3>
+        <ul>
+            <li>Multiway relationships between categorical variables</li>
+            <li>Flow through multiple decision levels</li>
+            <li>Interactive exploration of transitions</li>
+        </ul>
+
+        <p>Both packages can be combined in exploratory analyses—use <code>ggstream</code> to understand temporal patterns and <code>parcats</code> to decompose those patterns by category. Together, they provide complementary perspectives on complex, multidimensional data structures.</p>
+    </div>
+
+    <div class="section">
+        <h2>Further Resources</h2>
+        <div class="resources">
+            <ul>
+                <li><a href="https://github.com/davidsjoberg/ggstream" target="_blank">ggstream GitHub Repository</a></li>
+                <li><a href="https://github.com/cardiomoon/parcats" target="_blank">parcats GitHub Repository</a></li>
+                <li><a href="https://ggplot2.tidyverse.org/" target="_blank">ggplot2 Documentation</a></li>
+                <li><a href="https://github.com/tidyverse/dplyr" target="_blank">dplyr Documentation</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #999; font-size: 0.9em;">
+        <p>Generated for Data Visualization Exploration | February 2026</p>
+    </footer>
+</body>
+</html>
