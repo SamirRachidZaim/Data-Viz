@@ -1,0 +1,87 @@
+---
+title: "Exploring Streamplots and Parallel Categories with ggstream and parcats"
+author: "Samir Rachid Zaim"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ggstream and parcats Exploration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Introduction
+
+Streamplots and parallel categories visualizations offer powerful ways to explore temporal flows and multivariate relationships. This vignette demonstrates two complementary R packages: **ggstream** for flowing, elegant time-series visualizations, and **parcats** for interactive categorical data exploration.
+
+## ggstream: Flowing Artistry
+
+The `ggstream` package extends ggplot2 to create streamplots—smooth, flowing representations of data changes over time. These are ideal for showing how multiple categories contribute to a total across a time dimension.
+
+```{r ggstream-example, fig.width=7, fig.height=4}
+# install.packages("ggstream")
+library(ggstream)
+library(ggplot2)
+library(dplyr)
+
+# Create sample streaming data
+set.seed(42)
+data <- expand_grid(
+  time = 1:50,
+  category = c("A", "B", "C", "D")
+) %>%
+  mutate(value = rnorm(n(), mean = 10 + as.numeric(factor(category)) * 3, sd = 2))
+
+# Create streamplot
+ggplot(data, aes(x = time, y = value, fill = category)) +
+  geom_stream(type = "ridge") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() +
+  labs(title = "Stream Plot: Flows Over Time",
+       x = "Time", y = "Value", fill = "Category")
+```
+
+## parcats: Interactive Parallel Categories
+
+The `parcats` package creates interactive parallel categories (also called alluvial diagrams), enabling exploration of multi-level relationships. This is particularly useful for understanding how observations flow through multiple categorical dimensions.
+
+```{r parcats-example, fig.width=7, fig.height=4}
+# install.packages("parcats")
+library(parcats)
+
+# Create categorical data
+data_cat <- data.frame(
+  Industry = c("Tech", "Tech", "Finance", "Finance", 
+               "Retail", "Retail", "Tech", "Finance"),
+  Region = c("North", "South", "North", "South",
+             "North", "South", "North", "South"),
+  Quarter = c("Q1", "Q2", "Q1", "Q2",
+              "Q1", "Q2", "Q3", "Q3"),
+  Employees = c(150, 200, 120, 180, 90, 110, 170, 140)
+)
+
+# Create interactive parallel categories plot
+parcats(data_cat, dimensions = c("Industry", "Region", "Quarter"))
+```
+
+## Comparison and Use Cases
+
+**ggstream** excels at showing:
+- Temporal evolution of compositions (stacked area on curves)
+- Proportional changes across time
+- Smooth, aesthetically pleasing trends
+
+**parcats** excels at showing:
+- Multiway relationships between categorical variables
+- Flow through multiple decision levels
+- Interactive exploration of transitions
+
+Both packages can be combined in exploratory analyses—use ggstream to understand temporal patterns and parcats to decompose those patterns by category. Together, they provide complementary perspectives on complex, multidimensional data structures.
+
+## Further Resources
+
+- [ggstream GitHub](https://github.com/davidsjoberg/ggstream)
+- [parcats Documentation](https://github.com/cardiomoon/parcats)
