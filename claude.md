@@ -92,11 +92,141 @@ df = pd.read_csv('data.csv')
 ```
 
 ### 5. Stream/Flow Visualizations
+
+#### Streamgraph with Plotly
+```python
+import plotly.graph_objects as go
+import pandas as pd
+import numpy as np
+
+# Create sample data
+dates = pd.date_range('2023-01-01', periods=50)
+data = {
+    'Date': dates,
+    'Category_A': np.random.randint(10, 100, 50),
+    'Category_B': np.random.randint(20, 120, 50),
+    'Category_C': np.random.randint(15, 110, 50),
+    'Category_D': np.random.randint(10, 90, 50)
+}
+df = pd.DataFrame(data)
+
+# Create streamgraph
+fig = go.Figure()
+
+for col in ['Category_A', 'Category_B', 'Category_C', 'Category_D']:
+    fig.add_trace(go.Scatter(
+        x=df['Date'],
+        y=df[col],
+        mode='lines',
+        name=col,
+        stackgroup='one',  # This creates the streamgraph effect
+        fillcolor='rgba(0,100,200,0.5)'
+    ))
+
+fig.update_layout(
+    title='Streamgraph Example',
+    xaxis_title='Date',
+    yaxis_title='Value',
+    hovermode='x unified',
+    height=500
+)
+fig.show()
+```
+
+#### Stacked Area Chart with Matplotlib
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+# Sample data
+dates = pd.date_range('2023-01-01', periods=12, freq='M')
+data = {
+    'Product_A': np.random.randint(100, 500, 12),
+    'Product_B': np.random.randint(150, 600, 12),
+    'Product_C': np.random.randint(100, 450, 12)
+}
+df = pd.DataFrame(data, index=dates)
+
+# Create stacked area chart
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.stackplot(range(len(df)), 
+             df['Product_A'], 
+             df['Product_B'], 
+             df['Product_C'],
+             labels=['Product_A', 'Product_B', 'Product_C'],
+             alpha=0.7)
+
+ax.set_xlabel('Month')
+ax.set_ylabel('Sales')
+ax.set_title('Stacked Area Chart - Product Sales Over Time')
+ax.legend(loc='upper left')
+ax.set_xticks(range(len(df)))
+ax.set_xticklabels([d.strftime('%Y-%m') for d in df.index], rotation=45)
+plt.tight_layout()
+plt.show()
+```
+
+#### Flow Diagram with Plotly Sankey
 ```python
 import plotly.graph_objects as go
 
-# For streamgraph-style visualizations, use ggstream package
-# or create custom flow diagrams with Plotly
+# Define nodes and links for flow visualization
+fig = go.Figure(data=[go.Sankey(
+    node=dict(
+        pad=15,
+        thickness=20,
+        line=dict(color='black', width=0.5),
+        label=['Product A', 'Product B', 'Product C', 'Sales', 'Returns', 'Inventory'],
+        color=['blue', 'blue', 'blue', 'green', 'red', 'orange']
+    ),
+    link=dict(
+        source=[0, 1, 2, 3, 4],  # indices correspond to labels
+        target=[3, 3, 3, 5, 5],
+        value=[100, 150, 120, 50, 30]
+    )
+)])
+
+fig.update_layout(title='Product Flow - Sales to Inventory',
+                  font=dict(size=12), height=500)
+fig.show()
+```
+
+#### Altair Streamgraph Style
+```python
+import altair as alt
+import pandas as pd
+import numpy as np
+
+# Create sample time series data
+np.random.seed(42)
+dates = pd.date_range('2023-01-01', periods=100)
+categories = ['Category_A', 'Category_B', 'Category_C', 'Category_D']
+
+data = []
+for date in dates:
+    for cat in categories:
+        data.append({
+            'Date': date,
+            'Category': cat,
+            'Value': np.random.randint(10, 100)
+        })
+
+df = pd.DataFrame(data)
+
+# Create streamgraph-like visualization
+chart = alt.Chart(df).mark_area().encode(
+    x='Date:T',
+    y='Value:Q',
+    color='Category:N',
+    opacity=alt.value(0.7)
+).properties(
+    width=800,
+    height=400,
+    title='Stream-style Area Chart with Altair'
+).interactive()
+
+chart.show()
 ```
 
 ## Best Practices
