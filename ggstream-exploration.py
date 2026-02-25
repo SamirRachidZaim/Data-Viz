@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 import altair as alt
+import os
 
 
 # ============================================================================
@@ -69,10 +70,34 @@ def generate_sales_data(num_months=12, num_products=3, seed=42):
 
 
 # ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
+
+def create_output_folder(output_dir='outputs'):
+    """
+    Create output folder if it doesn't exist.
+    
+    Parameters:
+    -----------
+    output_dir : str
+        Path to the output directory
+        
+    Returns:
+    --------
+    str
+        Absolute path to the output directory
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"Created output directory: {output_dir}")
+    return output_dir
+
+
+# ============================================================================
 # STREAM/FLOW VISUALIZATION FUNCTIONS
 # ============================================================================
 
-def create_plotly_streamgraph(df, title='Streamgraph'):
+def create_plotly_streamgraph(df, title='Streamgraph', output_path=None):
     """
     Create an interactive streamgraph using Plotly.
     
@@ -82,6 +107,8 @@ def create_plotly_streamgraph(df, title='Streamgraph'):
         DataFrame with Date column and value columns
     title : str
         Title of the visualization
+    output_path : str, optional
+        Path to save the HTML file. If None, figure is not saved.
         
     Returns:
     --------
@@ -112,10 +139,14 @@ def create_plotly_streamgraph(df, title='Streamgraph'):
         template='plotly_white'
     )
     
+    if output_path:
+        fig.write_html(output_path)
+        print(f"Saved: {output_path}")
+    
     return fig
 
 
-def create_stacked_area_chart(df, title='Stacked Area Chart'):
+def create_stacked_area_chart(df, title='Stacked Area Chart', output_path=None):
     """
     Create a stacked area chart using Matplotlib.
     
@@ -125,6 +156,8 @@ def create_stacked_area_chart(df, title='Stacked Area Chart'):
         DataFrame with Date column and value columns (with Date as index or first column)
     title : str
         Title of the visualization
+    output_path : str, optional
+        Path to save the PNG file. If None, figure is not saved.
         
     Returns:
     --------
@@ -153,10 +186,15 @@ def create_stacked_area_chart(df, title='Stacked Area Chart'):
     ax.set_xticklabels([df_indexed.index[i].strftime('%Y-%m') for i in range(0, len(df_indexed), max(1, len(df_indexed)//5))], rotation=45)
     
     plt.tight_layout()
+    
+    if output_path:
+        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"Saved: {output_path}")
+    
     return fig
 
 
-def create_altair_streamgraph(df, title='Stream-style Area Chart'):
+def create_altair_streamgraph(df, title='Stream-style Area Chart', output_path=None):
     """
     Create a declarative streamgraph using Altair.
     
@@ -166,6 +204,8 @@ def create_altair_streamgraph(df, title='Stream-style Area Chart'):
         Long-format DataFrame with Date, Category, and Value columns
     title : str
         Title of the visualization
+    output_path : str, optional
+        Path to save the HTML file. If None, chart is not saved.
         
     Returns:
     --------
@@ -184,10 +224,14 @@ def create_altair_streamgraph(df, title='Stream-style Area Chart'):
         title=title
     ).interactive()
     
+    if output_path:
+        chart.save(output_path)
+        print(f"Saved: {output_path}")
+    
     return chart
 
 
-def create_sankey_flow(categories, flows, values, title='Flow Diagram'):
+def create_sankey_flow(categories, flows, values, title='Flow Diagram', output_path=None):
     """
     Create a Sankey diagram for flow visualization.
     
@@ -201,6 +245,8 @@ def create_sankey_flow(categories, flows, values, title='Flow Diagram'):
         List of flow values
     title : str
         Title of the visualization
+    output_path : str, optional
+        Path to save the HTML file. If None, figure is not saved.
         
     Returns:
     --------
@@ -232,6 +278,10 @@ def create_sankey_flow(categories, flows, values, title='Flow Diagram'):
         height=500
     )
     
+    if output_path:
+        fig.write_html(output_path)
+        print(f"Saved: {output_path}")
+    
     return fig
 
 
@@ -240,6 +290,9 @@ def create_sankey_flow(categories, flows, values, title='Flow Diagram'):
 # ============================================================================
 
 if __name__ == '__main__':
+    # Create output directory
+    output_dir = create_output_folder('outputs')
+    
     print("Generating sample data...")
     
     # Generate time series data
@@ -253,30 +306,31 @@ if __name__ == '__main__':
     print(sales_data.head())
     
     # Create visualizations
-    print("\nCreating visualizations...")
+    print("\nCreating visualizations and saving to outputs folder...")
     
     # 1. Plotly Streamgraph
-    print("1. Creating Plotly streamgraph...")
-    streamgraph = create_plotly_streamgraph(ts_data, title='Time Series Streamgraph')
-    streamgraph.show()
+    print("\n1. Creating Plotly streamgraph...")
+    streamgraph_path = os.path.join(output_dir, '01_plotly_streamgraph.html')
+    streamgraph = create_plotly_streamgraph(ts_data, title='Time Series Streamgraph', output_path=streamgraph_path)
     
     # 2. Matplotlib Stacked Area Chart
-    print("2. Creating Matplotlib stacked area chart...")
-    stacked_area = create_stacked_area_chart(sales_data, title='Sales Over Time - Stacked Area')
-    plt.show()
+    print("\n2. Creating Matplotlib stacked area chart...")
+    stacked_area_path = os.path.join(output_dir, '02_matplotlib_stacked_area.png')
+    stacked_area = create_stacked_area_chart(sales_data, title='Sales Over Time - Stacked Area', output_path=stacked_area_path)
+    plt.close()
     
     # 3. Altair Streamgraph (long format data needed)
-    print("3. Creating Altair streamgraph...")
+    print("\n3. Creating Altair streamgraph...")
     ts_long = ts_data.melt(id_vars=['Date'], var_name='Category', value_name='Value')
-    altair_chart = create_altair_streamgraph(ts_long, title='Altair Stream Visualization')
-    altair_chart.show()
+    altair_path = os.path.join(output_dir, '03_altair_streamgraph.html')
+    altair_chart = create_altair_streamgraph(ts_long, title='Altair Stream Visualization', output_path=altair_path)
     
     # 4. Sankey Flow Diagram
-    print("4. Creating Sankey flow diagram...")
+    print("\n4. Creating Sankey flow diagram...")
     categories = ['Product A', 'Product B', 'Product C', 'Sales', 'Returns', 'Inventory']
     flows = [(0, 3), (1, 3), (2, 3), (3, 5), (3, 4)]
     values = [100, 150, 120, 370, 30]
-    sankey = create_sankey_flow(categories, flows, values, title='Product Flow - Sales to Inventory')
-    sankey.show()
+    sankey_path = os.path.join(output_dir, '04_sankey_flow_diagram.html')
+    sankey = create_sankey_flow(categories, flows, values, title='Product Flow - Sales to Inventory', output_path=sankey_path)
     
-    print("\nVisualization examples complete!")
+    print(f"\nVisualization examples complete! All files saved to '{output_dir}' folder.")
